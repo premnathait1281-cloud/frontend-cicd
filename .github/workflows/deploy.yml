@@ -18,6 +18,11 @@ jobs:
         with:
           node-version: 22
 
+      - name: Install dependencies and build
+        run: |
+          npm install
+          npm run build
+
       - name: Setup SSH
         run: |
           echo "🔐 Setting up SSH configuration..."
