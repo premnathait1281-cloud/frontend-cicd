@@ -1,38 +1,38 @@
-name: Deploy Frontend
+name: Frontend Deploy
 
 on:
   push:
     branches:
-      - main
+      - dev
 
 jobs:
-  deploy-frontend:
+  deploy:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v3
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 22
 
-      - run: |
-          npm install
-          npm run build
-        working-directory: ./frontend-cicd
+      - name: Setup SSH
+        run: |
+          echo "🔐 Setting up SSH configuration..."
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
 
-      - uses: appleboy/scp-action@v0.1.4
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_KEY }}
-          source: frontend-cicd/build/*
-          target: /opt/nodejs/frontend-cicd/build
-
-      - uses: appleboy/ssh-action@v0.1.8
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_KEY }}
-          script: |
-            sudo nginx -t
-            sudo systemctl reload nginx
+      - name: Deploy to EC2
+        run: |
+          echo "🚀 Deploying frontend to EC2..."
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+            cd /opt/nodejs/frontend-cicd
+            git pull origin dev
+            npm install
+            npm run build
+            pm2 restart frontend || pm2 start npm --name "frontend" -- start
+          EOF
