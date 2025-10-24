@@ -1,43 +1,37 @@
-name: Frontend Deploy
+name: Frontend Deployment
 
 on:
   push:
     branches:
-      - dev
+      - main
 
 jobs:
-  deploy:
+  deploy-frontend:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
 
-      - name: Install dependencies and build
-        run: |
-          npm install
-          npm run build
+      - name: Install dependencies
+        run: npm install
 
-      - name: Setup SSH
+      - name: Build project
+        run: npm run build
+
+      - name: Setup SSH Key
         run: |
-          echo "🔐 Setting up SSH configuration..."
           mkdir -p ~/.ssh
           echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+          ssh-keyscan -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts
 
-      - name: Deploy to EC2
+      - name: Upload build files to EC2
         run: |
-          echo "🚀 Deploying frontend to EC2..."
-          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
-            cd /opt/nodejs/frontend-cicd
-            git pull origin dev
-            npm install
-            npm run build
-            pm2 restart frontend || pm2 start npm --name "frontend" -- start
-          EOF
+          echo "Deploying frontend..."
+          rsync -avz --delete --exclude='.git' --exclude='node_modules' -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" ./build/ ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/var/www/html/
