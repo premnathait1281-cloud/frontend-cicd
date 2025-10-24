@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import './BmiCalculator.css'; // You can create this file for styling
+import './BmiCalculator.css'; // Styling file
 
 const BmiCalculator = () => {
   const [weight, setWeight] = useState('');
@@ -13,7 +13,7 @@ const BmiCalculator = () => {
       return;
     }
 
-    const heightInMeters = parseFloat(height) / 100; // Convert cm to meters
+    const heightInMeters = parseFloat(height) / 100;
     const bmiValue = (parseFloat(weight) / (heightInMeters * heightInMeters)).toFixed(2);
     setBmi(bmiValue);
 
@@ -35,17 +35,27 @@ const BmiCalculator = () => {
 
   return (
     <div className="bmi-container">
-      <h1>BMI Calculator</h1>
+      <h1>BMI Calculator 🚀</h1> {/* Added rocket emoji to trigger workflow */}
       <div className="input-group">
         <label>
           Weight (kg):
-          <input type="number" value={weight} onChange={(e) => setWeight(e.target.value)} placeholder="Enter your weight" />
+          <input
+            type="number"
+            value={weight}
+            onChange={(e) => setWeight(e.target.value)}
+            placeholder="Enter your weight"
+          />
         </label>
       </div>
       <div className="input-group">
         <label>
           Height (cm):
-          <input type="number" value={height} onChange={(e) => setHeight(e.target.value)} placeholder="Enter your height" />
+          <input
+            type="number"
+            value={height}
+            onChange={(e) => setHeight(e.target.value)}
+            placeholder="Enter your height"
+          />
         </label>
       </div>
       <div className="buttons">
