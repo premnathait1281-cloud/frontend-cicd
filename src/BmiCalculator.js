@@ -35,7 +35,7 @@ const BmiCalculator = () => {
 
   return (
     <div className="bmi-container">
-      <h1>BMI Calculator 🚀</h1> {/* Added rocket emoji to trigger workflow */}
+      <h1>BMI Calculator 🚀</h1> {/* Small visual change to trigger workflow */}
       <div className="input-group">
         <label>
           Weight (kg):
