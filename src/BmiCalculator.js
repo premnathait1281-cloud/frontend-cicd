@@ -18,15 +18,11 @@ const BmiCalculator = () => {
     setBmi(bmiValue);
 
     let bmiStatus = '';
-    if (bmiValue < 18.5) {
-      bmiStatus = 'Underweight';
-    } else if (bmiValue < 24.9) {
-      bmiStatus = 'Normal weight';
-    } else if (bmiValue < 29.9) {
-      bmiStatus = 'Overweight';
-    } else {
-      bmiStatus = 'Obesity';
-    }
+    if (bmiValue < 18.5) bmiStatus = 'Underweight';
+    else if (bmiValue < 24.9) bmiStatus = 'Normal weight';
+    else if (bmiValue < 29.9) bmiStatus = 'Overweight';
+    else bmiStatus = 'Obesity';
+
     setStatus(bmiStatus);
   };
 
@@ -43,30 +39,19 @@ const BmiCalculator = () => {
       <div className="input-group">
         <label>
           Weight (kg):
-          <input
-            type="number"
-            value={weight}
-            onChange={(e) => setWeight(e.target.value)}
-            placeholder="Enter your weight"
-          />
+          <input type="number" value={weight} onChange={(e) => setWeight(e.target.value)} placeholder="Enter your weight" />
         </label>
       </div>
       <div className="input-group">
         <label>
           Height (cm):
-          <input
-            type="number"
-            value={height}
-            onChange={(e) => setHeight(e.target.value)}
-            placeholder="Enter your height"
-          />
+          <input type="number" value={height} onChange={(e) => setHeight(e.target.value)} placeholder="Enter your height" />
         </label>
       </div>
       <div className="buttons">
         <button onClick={calculateBMI}>Calculate BMI</button>
         <button onClick={resetFields}>Reset</button>
       </div>
-
       {bmi && (
         <div className="result">
           <h2>Your BMI: {bmi}</h2>
