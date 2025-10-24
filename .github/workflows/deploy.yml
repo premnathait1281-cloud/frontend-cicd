@@ -3,7 +3,7 @@ name: Frontend Deployment
 on:
   push:
     branches:
-      - main  # Trigger on pushes to main branch
+      - main  # Trigger deployment on pushes to main
 
 jobs:
   deploy-frontend:
@@ -36,14 +36,17 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts
 
-      # 6️⃣ Deploy build folder to EC2
+      # 6️⃣ Deploy build folder to EC2 using sudo
       - name: Upload build files to EC2
         run: |
           echo "Deploying frontend to EC2..."
-          rsync -avz --delete --exclude='.git' --exclude='node_modules' -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" ./build/ ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/var/www/html/
+          # Step 1: Upload to temp folder
+          rsync -avz --delete --exclude='.git' --exclude='node_modules' -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" ./build/ ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/tmp/frontend-build/
+          
+          # Step 2: Move to /var/www/html with sudo
+          ssh -i ~/.ssh/id_rsa ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "sudo rsync -av --delete /tmp/frontend-build/ /var/www/html/ && sudo rm -rf /tmp/frontend-build/"
 
-      # 7️⃣ Optional: Restart server (if using PM2 or Node server for frontend)
-      # Uncomment if needed
+      # 7️⃣ Optional: Restart server (if needed, e.g., Node frontend)
       # - name: Restart frontend server
       #   uses: appleboy/ssh-action@v0.1.8
       #   with:
