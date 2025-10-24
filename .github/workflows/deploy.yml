@@ -3,27 +3,32 @@ name: Frontend Deployment
 on:
   push:
     branches:
-      - main
+      - main  # Trigger on pushes to main branch
 
 jobs:
   deploy-frontend:
     runs-on: ubuntu-latest
 
     steps:
+      # 1️⃣ Checkout repository
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # 2️⃣ Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
 
+      # 3️⃣ Install dependencies
       - name: Install dependencies
         run: npm install
 
+      # 4️⃣ Build project
       - name: Build project
         run: npm run build
 
+      # 5️⃣ Setup SSH key for EC2
       - name: Setup SSH Key
         run: |
           mkdir -p ~/.ssh
@@ -31,7 +36,21 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts
 
+      # 6️⃣ Deploy build folder to EC2
       - name: Upload build files to EC2
         run: |
-          echo "Deploying frontend..."
+          echo "Deploying frontend to EC2..."
           rsync -avz --delete --exclude='.git' --exclude='node_modules' -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" ./build/ ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/var/www/html/
+
+      # 7️⃣ Optional: Restart server (if using PM2 or Node server for frontend)
+      # Uncomment if needed
+      # - name: Restart frontend server
+      #   uses: appleboy/ssh-action@v0.1.8
+      #   with:
+      #     host: ${{ secrets.EC2_HOST }}
+      #     username: ${{ secrets.EC2_USER }}
+      #     key: ${{ secrets.EC2_SSH_KEY }}
+      #     script: |
+      #       echo "Restarting frontend server..."
+      #       pm2 restart frontend || pm2 start server.js --name frontend
+      #       pm2 save
